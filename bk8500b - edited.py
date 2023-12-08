@@ -1,6 +1,10 @@
 # BK PRECISION 8500 PROGRAMMABLE DC LOAD 
 # Thalia Koutsougeras
 
+import time
+import matplotlib.pyplot as plt
+import numpy as np
+
 """
 #########################################################################################################
 # These functions are provided by the following website:
@@ -1161,9 +1165,65 @@ inputOn(True, serial)
 ##########################################################################################
 ### IV SWEEP SEQUENCE
 # Starting Voltage (0.1)
-setCVVoltage(0.1, serial)
-
+start_volt = 0.1 ##INPUT
+setCVVoltage(start_volt, serial) ##INPUT
+end_volt = 16 ##INPUT
 init_step_size = 1
+decay_mult = 0.5 ##INPUT    ## loop iteration?
+sub_sample_size = 1 ##INPUT
+
+current_voltage = (start_volt - init_step_size) + (init_step_size * decay_mult)
+
+while True:
+    setCVVoltage(current_voltage, serial) # set constant voltage
+
+    volt_readings = []
+    curr_readings = []
+    power_readings = []
+    final_matrix = [] # each row is a measurement
+    
+    for i in sub_sample_size:
+        time.sleep(.050)
+        time.sleep(.300)
+
+        # take readings & store
+        volt = readMaxVoltage(serial) ## not sure if these are the right functions
+        volt_readings.append(volt)
+        curr = readMaxCurrent(serial)
+        curr_readings.append(curr)
+        power = readMaxPower(serial)
+        power_readings.append(power)
+
+        time.sleep(0.002)
+    
+        # Average the subsamples and store 
+        final_array = [0,0,0] #[volt, curr, power]
+        final_array[i,0] = sum(volt_readings) / sub_sample_size
+        final_array[i,1] = sum(curr_readings) / sub_sample_size
+        final_array[i,2] = sum(power_readings) / sub_sample_size
+
+    # Plotting
+    plt.plot(final_array[:,0], final_array[:,1]) #IV curve
+    plt.show()
+    plt.plot(final_array[:,0], final_array[:,2]) #PV curve
+    plt.show()
+
+    # Analysis
+    max_power = max(final_array[:,2]) # grab max power value
+    isc = (final_array[0,1]) # current when voltage is 0
+    voc = (final_array[sub_sample_size,2]) # current when voltage is 0
+    FF = max_power / (isc*voc)  # fill factor
+    # ratio of the actual maximum obtainable power to the product of short circuit current Is/c and open circuit voltage Vo/c
+
+    current_voltage -= init_step_size
+    current_voltage += (init_step_size * decay_mult)
+    percent_complete = (current_voltage / end_volt) * 100
+    print("Percent_complete: ", percent_complete)
+
+    if (current_voltage >= end_volt):
+        break
+
+    
 
 
 ##########################################################################################
