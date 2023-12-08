@@ -1122,7 +1122,7 @@ def readVonPoint(serial):
 import serial
 import time
 
-### INITIALIZATION - BASED ON EXAMPLE FILE
+### INITIALIZATION BASED ON EXAMPLE FILE
 # Asks which COMM port to open
 portNum = input("Which COMM Port? ")
 ser = serial.Serial()                 
@@ -1146,6 +1146,10 @@ print("\n")
 
 ##########################################################################################
 ### INITIALIZATION
+"""
+Just some initialization parameters.
+"""
+
 # Set max voltage
 setMaxVoltage(120, serial)
 
@@ -1164,6 +1168,12 @@ inputOn(True, serial)
 
 ##########################################################################################
 ### IV SWEEP SEQUENCE
+"""
+We are going to step the voltage for a certain range and keep taking voltage, current, 
+and power measurements, and for each step in voltage, we also take sub samples and 
+average them. 
+"""
+
 # Starting Voltage (0.1)
 start_volt = 0.1 ##INPUT
 setCVVoltage(start_volt, serial) ##INPUT
@@ -1197,7 +1207,7 @@ while True:
         time.sleep(0.002)
     
         # Average the subsamples and store 
-        final_array = [0,0,0] #[volt, curr, power]
+        final_array = [0,0,0] #[volt, curr, power] where each row is a measurement
         final_array[i,0] = sum(volt_readings) / sub_sample_size
         final_array[i,1] = sum(curr_readings) / sub_sample_size
         final_array[i,2] = sum(power_readings) / sub_sample_size
