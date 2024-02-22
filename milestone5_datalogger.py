@@ -38,6 +38,7 @@
 # 5 - 105 - J
 # 6 - 106 - K
 # '@101, 102, 103, 104, 105, 106'
+# '@201, 202, 203, 204, 205, 206'
 """
 
 
@@ -90,19 +91,35 @@ def main():
 
 
 
+
+        # GHI SENSOR READINGS (0-40 mV) - The Global Horizontal Irradiande (GHI) measures the total amount of light received by a square meter on the ground.
+        # 2 sensors - channels 110, 111
+        # First test - channel 110 is circle sensor, 111 is square
+        # SENSe - These commands disable or enable autoranging for AC and DC voltage measurements on the specified channels. Autoranging is 
+        # convenient because the instrument automatically selects the range for each measurement based on the input signal detected.
+        logger.write(':SENSe:VOLTage:DC:RANGe:AUTO %d,(%s)' % (1, '@109, 110, 111'))
+
+        # CONFigure - These commands configure the channels in the <scan_list> for AC or DC voltage measurements but do not initiate the scan. 
+        logger.write(':CONFigure:VOLTage:DC %s,(%s)' % ('AUTO', '@109, 110, 111'))
+        
+        # ROUT - This command selects the channels to be included in the scan list. 
+        #logger.write(':ROUTe:SCAN (%s)' % ('@110,111'))
+
+        
         # TEMPERATURE READINGS
         # SENSe - This checks that thermocouple is properly connected 
-        logger.write(':SENSe:TEMPerature:TRANsducer:TCouple:CHECk %d,(%s)' % (1, '@101, 102, 103, 104, 105, 106'))
+        logger.write(':SENSe:TEMPerature:TRANsducer:TCouple:CHECk %d,(%s)' % (1, '@201, 202, 203, 204, 205, 206'))
         # SENSe - This selects the thermocouple type to use
-        logger.write(':SENSe:TEMPerature:TRANsducer:TCouple:TYPE %s,(%s)' % ('K', '@101, 102, 103, 104, 105, 106'))
+        logger.write(':SENSe:TEMPerature:TRANsducer:TCouple:TYPE %s,(%s)' % ('K', '@201, 202, 203, 204, 205, 206'))
 
         # CONFigure - These commands configure the channels for temperature measurements but do not initiate the scan.
-        logger.write(':CONFigure:TEMPerature %s,%s,(%s)' % ('TCouple', 'K', '@101, 102, 103, 104, 105, 106')) ### TOGGLED OFF
+        logger.write(':CONFigure:TEMPerature %s,%s,(%s)' % ('TCouple', 'K', '@201, 202, 203, 204, 205, 206')) ### TOGGLED OFF
 
         # ROUT - This command selects the channels to be included in the scan list. This command is used in conjunction with the CONFigure commands to set up an 
         #    automated scan. The specified channels supersede any channels previously defined to be part of the scan list. To start the scan, use the INITiate or 
         #    READ? command. 
-        logger.write(':ROUTe:SCAN (%s)' % ('@101, 102, 103, 104, 105, 106')) # this is where you put multiple
+        logger.write(':ROUTe:SCAN (%s)' % ('@109, 110, 111, 201, 202, 203, 204, 205, 206')) # this is where you put multiple
+        
 
         # READ? - This command changes the instrument's triggering system from the "idle" state to the "wait-for-trigger" state. Scanning will begin when the specified 
         #   trigger conditions are satisfied following the receipt of the READ? command. Readings are then sent immediately to reading memory and the instrument's 
@@ -126,6 +143,10 @@ def main():
         logger.write(':FORMat:READing:TIME:TYPE %s' % ('ABS'))
         logger.write(':FORMat:READing:ALARm %d' % (1))
 
+        # NO LOOP
+        #readings1 = logger.query(':FETCh?')
+        #print("output of logger: ", readings1)
+        
         
         # LOOPING
         for n in range(15): #time delay of 2 seconds means 2*30 = 60 so n=30 for 1 minute, n=150 for 5 minutes, n=90 for 3 minutes
@@ -158,7 +179,9 @@ def main():
                 # ([A-Za-z,0-9]+) is 1-any characters of letters or numbers
 
             #assignments = [Channel_Dict[105], Channel_Dict[106], Channel_Dict[107], Channel_Dict[108], Channel_Dict[109], Channel_Dict[110]]
-            assignments = ['TC1 - L', 'TC2 - G', 'TC3 - H', 'TC4 - I', 'TC5 - J', 'TC6 - K']
+            #assignments = ['TC1 - L', 'TC3 - H', 'TC4 - I', 'TC5 - J', 'TC6 - K', 'TC2 - G']
+            assignments = ['GHI1', 'GHI2', 'GHI3', 'TC1 - G', 'TC2 - H', 'TC3 - I', 'TC4 - J', 'TC5 - K', 'TC6 - L']
+
             count = 0
             for m in re.finditer(pattern, readings1): # need to iterate because we need to read multiple channels
                 res = m.group(0)
@@ -168,7 +191,7 @@ def main():
                 file_object.write(out) # write out to file
                 file_object.write("\n")
             time.sleep(2)
-
+        
         
         print("\n Finished requested reading")
 
