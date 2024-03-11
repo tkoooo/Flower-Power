@@ -41,6 +41,19 @@
 # '@201, 202, 203, 204, 205, 206'
 """
 
+"""
+# sfr 2 tESTING  3/6/24
+# 1 - 212 - L
+# 2 - 213 - G
+# 3 - 214 - H
+# 4 - 215 - I
+# 5 - 216 - J
+# 6 - 217 - K
+# ghi 1 - 108
+# GHI 2 - 110
+# '@212, 213, 214, 215, 216, 217'
+"""
+
 
 import numpy as np # For keysight_ktdaq970 arrays
 import pyvisa as visa
@@ -57,7 +70,7 @@ def main():
     # USB[ board ]:: manufacturer ID :: model code :: serial number [:: USB interface number ][::INSTR]
 
     # Opening a file for writing to
-    file_object = open("measurements.txt", "w")
+    file_object = open("measurements_030724_T1_movingonsun3_highMFR.txt", "w")
 
     try:
         #print("\n  keysight_ktdaq970 Python\n")
@@ -69,8 +82,8 @@ def main():
         #logger.write('*RST') # Resets the instrument - factory reset every time ### TOGGLED OFF
 
         # You only need to set the time and date once if you don't reset every time
-        #logger.write("SYST:DATE 2023,2,14") #<yyyy>,<mm>,<dd>  ### TOGGLED OFF
-        #logger.write("SYST:TIME 16,16,00.000") #SYSTem:TIME <hh>,<mm>,<ss.sss> ### TOGGLED OFF
+        #logger.write("SYST:DATE 2023,03,07") #<yyyy>,<mm>,<dd>  ### TOGGLED OFF
+        #logger.write("SYST:TIME 14,46,00.000") #SYSTem:TIME <hh>,<mm>,<ss.sss> ### TOGGLED OFF
 
         #print("time testing\n") 
         #print(logger.write("FORM:READ:TIME:TYPE?"))
@@ -97,28 +110,28 @@ def main():
         # First test - channel 110 is circle sensor, 111 is square
         # SENSe - These commands disable or enable autoranging for AC and DC voltage measurements on the specified channels. Autoranging is 
         # convenient because the instrument automatically selects the range for each measurement based on the input signal detected.
-        logger.write(':SENSe:VOLTage:DC:RANGe:AUTO %d,(%s)' % (1, '@109, 110, 111'))
+        logger.write(':SENSe:VOLTage:DC:RANGe:AUTO %d,(%s)' % (1, '@106, 108, 110'))
 
         # CONFigure - These commands configure the channels in the <scan_list> for AC or DC voltage measurements but do not initiate the scan. 
-        logger.write(':CONFigure:VOLTage:DC %s,(%s)' % ('AUTO', '@109, 110, 111'))
+        logger.write(':CONFigure:VOLTage:DC %s,(%s)' % ('AUTO', '@106, 108, 110'))
         
         # ROUT - This command selects the channels to be included in the scan list. 
-        #logger.write(':ROUTe:SCAN (%s)' % ('@110,111'))
+        #logger.write(':ROUTe:SCAN (%s)' % ('@108,110'))
 
         
         # TEMPERATURE READINGS
         # SENSe - This checks that thermocouple is properly connected 
-        logger.write(':SENSe:TEMPerature:TRANsducer:TCouple:CHECk %d,(%s)' % (1, '@201, 202, 203, 204, 205, 206'))
+        logger.write(':SENSe:TEMPerature:TRANsducer:TCouple:CHECk %d,(%s)' % (1, '@212, 213, 214, 215, 216, 217'))
         # SENSe - This selects the thermocouple type to use
-        logger.write(':SENSe:TEMPerature:TRANsducer:TCouple:TYPE %s,(%s)' % ('K', '@201, 202, 203, 204, 205, 206'))
+        logger.write(':SENSe:TEMPerature:TRANsducer:TCouple:TYPE %s,(%s)' % ('K', '@212, 213, 214, 215, 216, 217'))
 
         # CONFigure - These commands configure the channels for temperature measurements but do not initiate the scan.
-        logger.write(':CONFigure:TEMPerature %s,%s,(%s)' % ('TCouple', 'K', '@201, 202, 203, 204, 205, 206')) ### TOGGLED OFF
+        logger.write(':CONFigure:TEMPerature %s,%s,(%s)' % ('TCouple', 'K', '@212, 213, 214, 215, 216, 217')) ### TOGGLED OFF
 
         # ROUT - This command selects the channels to be included in the scan list. This command is used in conjunction with the CONFigure commands to set up an 
         #    automated scan. The specified channels supersede any channels previously defined to be part of the scan list. To start the scan, use the INITiate or 
         #    READ? command. 
-        logger.write(':ROUTe:SCAN (%s)' % ('@109, 110, 111, 201, 202, 203, 204, 205, 206')) # this is where you put multiple
+        logger.write(':ROUTe:SCAN (%s)' % ('@106, 108, 110, 212, 213, 214, 215, 216, 217')) # this is where you put multiple
         
 
         # READ? - This command changes the instrument's triggering system from the "idle" state to the "wait-for-trigger" state. Scanning will begin when the specified 
@@ -147,9 +160,10 @@ def main():
         #readings1 = logger.query(':FETCh?')
         #print("output of logger: ", readings1)
         
+        #logger.write(':ROUTe:SCAN (%s)' % ('@108, 110, 212, 213, 214, 215, 216, 217')) # this is where you put multiple
         
         # LOOPING
-        for n in range(15): #time delay of 2 seconds means 2*30 = 60 so n=30 for 1 minute, n=150 for 5 minutes, n=90 for 3 minutes
+        for n in range(300): #time delay of 2 seconds means 2*30 = 60 so n=30 for 1 minute, n=150 for 5 minutes, n=90 for 3 minutes
             # Display time of this measurement and also write to file
             time_values = logger.query_ascii_values(':SYSTem:TIME?')
             hh = int(time_values[0])
@@ -159,8 +173,10 @@ def main():
             time_string = "\nCurrent time: " + str(hh) + ":" + str(mm) + "\n"
             file_object.write(time_string)
 
+
             # FETCh? - This command transfers readings stored in non-volatile memory to the instrument's output buffer, where you can read them into your computer. The 
             #    readings stored in memory are not erased when you read them with FETCh?. The format of the readings can be changed using FORMat:READing commands.
+            logger.write(':INITiate')
             readings1 = logger.query(':FETCh?')
             print("output of logger: ", readings1)
 
@@ -180,7 +196,8 @@ def main():
 
             #assignments = [Channel_Dict[105], Channel_Dict[106], Channel_Dict[107], Channel_Dict[108], Channel_Dict[109], Channel_Dict[110]]
             #assignments = ['TC1 - L', 'TC3 - H', 'TC4 - I', 'TC5 - J', 'TC6 - K', 'TC2 - G']
-            assignments = ['GHI1', 'GHI2', 'GHI3', 'TC1 - G', 'TC2 - H', 'TC3 - I', 'TC4 - J', 'TC5 - K', 'TC6 - L']
+            #assignments = ['GHI1', 'GHI2', 'GHI3', 'TC1 - G', 'TC2 - H', 'TC3 - I', 'TC4 - J', 'TC5 - K', 'TC6 - L']
+            assignments = ['DNI', 'GHI1', 'GHI2', 'TC1 - G', 'TC2 - H', 'TC3 - I', 'TC4 - J', 'TC5 - K', 'TC6 - L']
 
             count = 0
             for m in re.finditer(pattern, readings1): # need to iterate because we need to read multiple channels
