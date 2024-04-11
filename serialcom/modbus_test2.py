@@ -14,8 +14,9 @@ import serial
 import RPi.GPIO as GPIO
 from time import sleep
 import datetime
-from pymodbus.client.sync import ModbusSerialClient
 """
+from pymodbus.client.sync import ModbusSerialClient
+
 
 import serial 
 import serial.rs485 
@@ -24,6 +25,7 @@ import RPi.GPIO as GPIO
 
 
 def main():
+    """
     # https://medium.com/raspberry-pi-and-rs485-modbus/modbus-rs485-raspberry-pi-5ccbc1996b7d 
     TXDEN_1=7 # transmit enable pin 
      
@@ -48,6 +50,8 @@ def main():
         print repr(x)# printing in hex format 
         print “ok” 
         time.sleep(2)
+        """
+        
 
 
     # OLD CODE WITH PYSERIAL
@@ -70,7 +74,7 @@ def main():
     sleep(5) # cool off for 30 seconds
     """
 
-
+    # also industrialshields.com
     # basic starter code taken from https://stackoverflow.com/questions/70686813/how-to-access-particular-registers-using-pymodbus-rtu 
     client = ModbusSerialClient(
         port='/dev/serial0',
@@ -88,7 +92,10 @@ def main():
         # ONLINE CODE
         # Read holding register
         print("Connection Successful")
-        res = client.read_holding_registers(address=53, count=1, unit=1)
+        addressi = int(0x40006)
+        addressih=0x40006
+        slave_address = 0x06
+        res = client.read_holding_registers(address=addressih, count=1, unit=slave_address)
 
         # Where "address" is register address
         # Where "count" is the number of registers to read
@@ -113,7 +120,7 @@ def main():
         Raises
         ModbusException –
         """
-
+        """
         # new code - these expect integer values
         print("Connection Successful")
         address = int(0x40006) # this register from manual - may need a different one
@@ -122,6 +129,7 @@ def main():
         res = client.write_register(address, value, slave)
         print(res)
         client.close()
+        """
         
 
     else:
